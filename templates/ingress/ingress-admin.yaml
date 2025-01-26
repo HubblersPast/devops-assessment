@@ -1,0 +1,27 @@
+{{- if .Values.adminIngress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-admin
+  annotations:
+    {{- if .Values.adminIngress.annotations }}
+    {{ toYaml .Values.adminIngress.annotations | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.adminIngress.className }}
+  rules:
+    {{- range .Values.adminIngress.hosts }}
+    - host: {{ .host | default "frontend.local" | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path | default "/admin" | quote }}
+            pathType: {{ .pathType | default "ImplementationSpecific" | quote }}
+            backend:
+              service:
+                name: {{ $.Release.Name }}-frontend
+                port:
+                  number: {{ $.Values.frontend.service.port | default 80 }}
+          {{- end }}
+    {{- end }}
+{{- end }}

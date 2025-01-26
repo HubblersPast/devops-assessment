@@ -1,0 +1,81 @@
+frontend:
+  replicaCount: 1
+  image: vindsburg/assessment-front
+  resources:
+    limits:
+      cpu: "1"
+      memory: "512Mi"
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+  service:
+    type: ClusterIP
+    port: 80
+
+backend:
+  replicaCount: 1
+  image: vindsburg/assessment-back
+  resources:
+    limits:
+      cpu: "1"
+      memory: "512Mi"
+    requests:
+      cpu: "100m" 
+      memory: "128Mi"
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+
+postgresql-ha:
+  postgresql:
+    replicaCount: 1
+    repmgr:
+      enabled: true
+    existingSecret: "postgresql-ha-passwords"
+  pgpool:
+    existingSecret: "postgresql-ha-passwords"
+    replicaCount: 1
+  persistence:
+    size: 10Gi
+  service:
+    type: ClusterIP
+
+ingress:
+  enabled: true
+  className: "nginx"
+  hosts:
+    - host: frontend.local
+      paths:
+        - path: /
+          pathType: Prefix
+  annotations: {}
+
+adminIngress:
+  enabled: true
+  className: "nginx"
+  hosts:
+    - host: frontend.local
+      paths:
+        - path: /admin
+          pathType: Prefix
+  annotations:
+    nginx.ingress.kubernetes.io/whitelist-source-range: "192.168.0.0/24"
+
+internalIngress:
+  enabled: true
+  className: "nginx"
+  hosts:
+    - host: frontend.local
+      paths:
+        - path: /api/internal
+          pathType: Prefix
+  annotations:
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/16"
+
+autoscaling:
+  enabled: false  # Disable by default
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: null  # Optional

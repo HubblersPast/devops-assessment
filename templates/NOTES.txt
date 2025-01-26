@@ -1,0 +1,23 @@
+# Notes
+## Check frontend connection to backend
+```kubectl exec -it deployment/assessment-frontend -- curl http://assessment-backend:80```
+
+## For minikube deployment
+### For direct access to frontend svc
+``` minikube service assessment-frontend --url ```
+
+### Over ingress
+```minikube tunnel```
+
+### Test with
+```curl http://frontend.local```
+
+### test /api access
+```
+kubectl get svc assessment-frontend
+NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+assessment-frontend   ClusterIP   10.98.255.83   <none>        80/TCP    24m
+kubectl run curl-test --image=curlimages/curl --rm -it --restart=Never -- sh
+If you don't see a command prompt, try pressing enter.
+~ $ curl http://10.98.255.83/api/internal
+```
